@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <windows.h>    
 using namespace std;
 
@@ -188,7 +189,6 @@ public:
     Shape(string t):type(t){}
    
     virtual void print()const = 0;
-
 };
 
 
@@ -207,6 +207,7 @@ public:
     Line():Shape(){}
     Line(Point start,Point end,string t):start(start),end(end),Shape(t){}
     
+   
     
     void print()const {
         cout << "type: " << type << endl;
@@ -214,6 +215,40 @@ public:
         gotoxy(end.x, end.y); cout << "*";
         cout << endl;
     }
+
+        void saveLine() {
+            ofstream out("figures.txt");
+
+            if (out.is_open()) {
+                out << "type: " << type << endl << endl;
+
+                int maxX = start.x;
+                if (end.x > maxX) {
+                    maxX = end.x;
+                }
+
+                int maxY = start.y;
+                if (end.y > maxY) {
+                    maxY = end.y;
+                }
+
+                for (int y = 0; y <= maxY; y++) {
+                    for (int x = 0; x <= maxX; x++) {
+                        if ((x == start.x && y == start.y) ||
+                            (x == end.x && y == end.y)) {
+                            out << "*";
+                        }
+                        else {
+                            out << " ";
+                        }
+                    }
+                    out << endl;
+                }
+
+                out.close();
+            }
+        }
+    
 };
 
 
@@ -233,6 +268,9 @@ public:
     Rectangle1():width(0),height(0){}
     Rectangle1(Point  p,int w,int h,string t):coord(p), width(w), height(h),Shape(t) {}
    
+
+
+
     void print()const override {
         cout << "type: " << type << endl;
         for (int i = 0; i < width; i++)
@@ -245,20 +283,55 @@ public:
             cout << endl;
         }
     }
+
+
+   
+
 };
 
 
-class Polyline :public Shape {
-    int* points;
-public:
-    Polyline():points(nullptr){}
-   
-    void print()const override {
-        //setcursor + gotoxy
+class Polyline1 :public Shape {
+    struct Point {
+        int x;
+        int y;
 
+        Point() :x(0), y(0) {}
+        Point(int x, int y) :x(x), y(y) {}
+    };
+    Point* points;
+    int countPoints;
+public:
+    Polyline1():points(nullptr),countPoints(0),Shape(){}
+    Polyline1(initializer_list<Point>list,string t):points(nullptr),countPoints(list.size()),Shape(t)
+    {
+        points = new Point[countPoints];
+
+        int i = 0;
+        for (const Point& sub : list) {
+            points[i] = sub;
+            i++;
+        }
+    }
+ 
+    Point* begin() const {
+        return points;
     }
 
-    virtual ~Polyline() {
+    Point* end() const {
+        return points + countPoints;
+    }
+
+    void print()const override {
+        cout << "type: " << type << endl;
+
+        for (const Point& sub : *this) {
+            gotoxy(sub.x, sub.y);
+            cout << "*";
+        }
+    }
+
+
+     ~Polyline1() {
         if (points != nullptr)
             delete[]points;
     }
@@ -266,14 +339,17 @@ public:
 
 
 int main() {
-    
-  /*  Line l({ 9,3}, { 5,7 }, "line1");
-    l.print();*/
 
-    Rectangle1 r({ 5,6 }, 6, 6, "rectangle1");
-    r.print();
+      //Line l({ 9,3}, { 5,7 }, "line1");
+      //l.print();
+      //l.saveLine();
 
 
+      Rectangle1 r({ 5,9 }, 8, 6, "rectangle1");
+      r.print();
+
+    //Polyline1 p({ { 8,5 }, { 4, 7 },{6,9} },"polyline1");
+    //p.print();
 
 
 
